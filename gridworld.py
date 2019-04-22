@@ -10,6 +10,7 @@ LEFT = 3
 ROWS = 4
 COLUMNS = 4
 
+
 class GridWorldEnv(discrete.DiscreteEnv):
     """
     Custom GridWorld environment.
@@ -23,10 +24,11 @@ class GridWorldEnv(discrete.DiscreteEnv):
     Falling into a crack incurs a reward of -10 and finishes the episode.
     Moving into the terminal state incurs a reward of +100 and finishes the episode.
     Moving into the Shipwreck incurs a reward of +20 and the episode continues.
-    At each time-step, the robot has a 5% chance of slipping on the ice, and go 
+    At each time-step, the robot has a 5% chance of slipping on the ice, and go
     all the way to the side of the environment
     """
-    metadata = {'render.modes': ['human', 'ansi']}
+
+    metadata = {"render.modes": ["human", "ansi"]}
 
     def __init__(self):
         self.shape = (4, 4)
@@ -34,7 +36,7 @@ class GridWorldEnv(discrete.DiscreteEnv):
         state_count: int = np.prod(self.shape)
         action_count = 4
 
-        # wall location
+        # crack location
         self._crack = np.zeros(self.shape, dtype=np.bool)
         self._crack[1, 1] = True
         self._crack[1, 3] = True
@@ -55,9 +57,8 @@ class GridWorldEnv(discrete.DiscreteEnv):
             transition_prob[s][DOWN] = self._calculate_transition_prob(position, [1, 0])
             transition_prob[s][LEFT] = self._calculate_transition_prob(position, [0, -1])
 
-            if position == (3,0):
+            if position == (3, 0):
                 isd[s] = 1.0
-
 
         # Calculate actual probabilities for isd
         isd = isd / np.sum(isd)
@@ -66,29 +67,55 @@ class GridWorldEnv(discrete.DiscreteEnv):
 
     def _calculate_transition_prob(self, current, delta):
         """
-        Determines the outcome for an action. Transition Prob is always 1.
+        Determines the outcome for an action.
         :param current: Current position on the grid as (row, col)
         :param delta: Change in position from transition
         :return: (1.0, new_state, reward, done)
         """
 
-        new_position = np.array(current) + np.array(delta) 
+        new_position = np.array(current) + np.array(delta)
         new_position = self._limit_coordinates(new_position).astype(int)
+        is_same_state = tuple(new_position) == current
 
+        new_position_slip = np.array(current) + np.array(delta)
+        slip = new_position_slip[0] in range(4) and new_position_slip[1] in range(4)
+        while new_position_slip[0] in range(4) and new_position_slip[1] in range(4):
+            # check to see if we hit a crack
+            is_crack = self._crack[tuple(new_position_slip)]
+            if is_crack:
+                # print(f"I'm in a crack and my new pos = {new_position_slip}")
+                break
+            new_position_slip = np.array(new_position_slip) + np.array(delta)
+        new_position_slip = self._limit_coordinates(new_position_slip).astype(int)
+        new_state_slip = np.ravel_multi_index(tuple(new_position_slip), self.shape) if slip else (0, 0)
         new_state = np.ravel_multi_index(tuple(new_position), self.shape)
         shipwreck = (2, 2)
         terminal_state = (self.shape[0] - 4, self.shape[1] - 1)
         is_done_crack = self._crack[tuple(new_position)]
+        is_done_crack_slip = self._crack[tuple(new_position_slip)]
         is_done_terminal = tuple(new_position) == terminal_state
+        is_done_terminal_slip = tuple(new_position_slip) == terminal_state
         is_shipwreck = tuple(new_position) == shipwreck
+        transition_prob = list()
         if is_done_crack:
             return [(1, new_state, -10, True)]
         elif is_done_terminal:
             return [(1, new_state, 100, True)]
         elif is_shipwreck:
-            return[(0.95, new_state, 20, False)]
+            transition_prob.append((0.95, new_state, 20, False))
+        elif is_same_state:
+            return [(1, new_state, 0, False)]
         else:
-            return [(0.95, new_state, 0, False)]
+            transition_prob.append((0.95, new_state, -1, False))
+
+        if is_done_crack_slip:
+            transition_prob.append((0.05, new_state_slip, -10, True))
+        elif is_done_terminal_slip:
+            transition_prob.append((0.05, new_state_slip, 100, True))
+        else:
+            transition_prob.append((0.05, new_state_slip, -1, False))
+
+        return transition_prob
 
     def _limit_coordinates(self, position):
         """
@@ -100,7 +127,7 @@ class GridWorldEnv(discrete.DiscreteEnv):
         position[1] = max(0, min(position[1], self.shape[1] - 1))
         return position
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         outfile = sys.stdout
 
         for s in range(self.nS):
@@ -120,10 +147,10 @@ class GridWorldEnv(discrete.DiscreteEnv):
                 output = output.lstrip()
             if position[1] == self.shape[1] - 1:
                 output = output.rstrip()
-                output += '\n'
+                output += "\n"
 
             outfile.write(output)
-        outfile.write('\n')
+        outfile.write("\n")
 
     def render_policy(self, policy):
         """
@@ -158,7 +185,7 @@ class GridWorldEnv(discrete.DiscreteEnv):
                 output = output.lstrip()
             if position[1] == self.shape[1] - 1:
                 output = output.rstrip()
-                output += '\n'
+                output += "\n"
 
             outfile.write(output)
-        outfile.write('\n')
+        outfile.write("\n")

@@ -1,6 +1,5 @@
 """
-Dynamic programming algorithms as described in Sutton and Barto Chapter 4
- - Policy Iteration (made up of Iterative Policy Evaluation and Policy Improvement)
+ - Howard's Policy Iteration (Iterative Policy Evaluation and Policy Improvement)
  - Value Iteration
 """
 import numpy as np
