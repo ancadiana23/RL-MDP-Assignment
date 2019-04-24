@@ -78,16 +78,14 @@ class GridWorldEnv(discrete.DiscreteEnv):
         is_same_state = tuple(new_position) == current
 
         new_position_slip = np.array(current) + np.array(delta)
-        slip = new_position_slip[0] in range(4) and new_position_slip[1] in range(4)
         while new_position_slip[0] in range(4) and new_position_slip[1] in range(4):
             # check to see if we hit a crack
             is_crack = self._crack[tuple(new_position_slip)]
             if is_crack:
-                # print(f"I'm in a crack and my new pos = {new_position_slip}")
                 break
-            new_position_slip = np.array(new_position_slip) + np.array(delta)
+            new_position_slip = new_position_slip + np.array(delta)
         new_position_slip = self._limit_coordinates(new_position_slip).astype(int)
-        new_state_slip = np.ravel_multi_index(tuple(new_position_slip), self.shape) if slip else (0, 0)
+        new_state_slip = np.ravel_multi_index(tuple(new_position_slip), self.shape)
         new_state = np.ravel_multi_index(tuple(new_position), self.shape)
         shipwreck = (2, 2)
         terminal_state = (self.shape[0] - 4, self.shape[1] - 1)
