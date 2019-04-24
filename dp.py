@@ -80,7 +80,7 @@ def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001):
 def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
     """
     Evaluates a policy and computes its state values given an environment
-    and a full description of that environment (an Markov Decision Process).
+    and a full description of that environment (a Markov Decision Process).
     The environment should be a subclass from the OpenAI Gym environments.
     :param env: The OpenAI Gym environment:
                  - env.P - transition probabilities of the environment
