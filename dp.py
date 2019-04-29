@@ -80,7 +80,7 @@ def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001):
 def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
     """
     Evaluates a policy and computes its state values given an environment
-    and a full description of that environment (an Markov Decision Process).
+    and a full description of that environment (a Markov Decision Process).
     The environment should be a subclass from the OpenAI Gym environments.
     :param env: The OpenAI Gym environment:
                  - env.P - transition probabilities of the environment
@@ -106,15 +106,16 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
         for state in env.P.keys():
             value = state_values[state]
             state_values[state] = 0.0
-            # loop over all the actions
-            for action, action_prob in zip(env.P[state].keys(), policy[state]):
-                # loop over all possible new states
-                for prob, new_state, reward, _ in env.P[state][action]:
-                    # calculate expected value using Bellman equation
-                    state_values[state] += (
-                        action_prob * prob * (reward + discount_factor * state_values[new_state])
-                    )
-            delta = np.max((delta, np.abs(value - state_values[state])))
+            if not env.terminal_states[state]:
+                # loop over all the actions
+                for action, action_prob in zip(env.P[state].keys(), policy[state]):
+                    # loop over all possible new states
+                    for prob, new_state, reward, _ in env.P[state][action]:
+                        # calculate expected value using Bellman equation
+                        state_values[state] += (
+                            action_prob * prob * (reward + discount_factor * state_values[new_state])
+                        )
+                delta = np.max((delta, np.abs(value - state_values[state])))
     return state_values
 
 
@@ -165,7 +166,8 @@ def get_action_values(s, env, state_values, discount_factor=1.0):
     :return: the action values
     """
     action_vals = np.zeros(len(env.P[s]))
-    for a in env.P[s].keys():
-        for prob, next_state, reward, _ in env.P[s][a]:
-            action_vals[a] += prob * (reward + discount_factor * state_values[next_state])
+    if not env.terminal_states[s]:
+        for a in env.P[s].keys():
+            for prob, next_state, reward, _ in env.P[s][a]:
+                action_vals[a] += prob * (reward + discount_factor * state_values[next_state])
     return action_vals

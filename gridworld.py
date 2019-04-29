@@ -43,6 +43,11 @@ class GridWorldEnv(discrete.DiscreteEnv):
         self._crack[2, 3] = True
         self._crack[3, 1:4] = True
 
+        self._win = np.zeros(self.shape, dtype=np.bool)
+        self._win[0, 3] = True
+
+        self.terminal_states = np.zeros(state_count, dtype=np.bool)
+
         # Calculate transition probabilities and rewards
         # Also calculate initial state distribution
         transition_prob = {}
@@ -59,6 +64,11 @@ class GridWorldEnv(discrete.DiscreteEnv):
 
             if position == (3, 0):
                 isd[s] = 1.0
+            current_state = np.ravel_multi_index(tuple(position), self.shape)
+            if self._crack[tuple(position)] or self._win[tuple(position)]:
+                self.terminal_states[current_state] = True
+            else:
+                self.terminal_states[current_state] = False
 
         # Calculate actual probabilities for isd
         isd = isd / np.sum(isd)
@@ -82,6 +92,7 @@ class GridWorldEnv(discrete.DiscreteEnv):
             # check to see if we hit a crack
             is_crack = self._crack[tuple(new_position_slip)]
             if is_crack:
+                # print(f"I'm in a crack and my new pos = {new_position_slip}")
                 break
             new_position_slip = new_position_slip + np.array(delta)
         new_position_slip = self._limit_coordinates(new_position_slip).astype(int)
@@ -104,14 +115,14 @@ class GridWorldEnv(discrete.DiscreteEnv):
         elif is_same_state:
             return [(1, new_state, 0, False)]
         else:
-            transition_prob.append((0.95, new_state, -1, False))
+            transition_prob.append((0.95, new_state, 0, False))
 
         if is_done_crack_slip:
             transition_prob.append((0.05, new_state_slip, -10, True))
         elif is_done_terminal_slip:
             transition_prob.append((0.05, new_state_slip, 100, True))
         else:
-            transition_prob.append((0.05, new_state_slip, -1, False))
+            transition_prob.append((0.05, new_state_slip, 0, False))
 
         return transition_prob
 

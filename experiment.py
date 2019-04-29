@@ -3,7 +3,6 @@ from gridworld import GridWorldEnv
 
 
 env = GridWorldEnv()
-
 state_values = dp.policy_evaluation(env=env, discount_factor=0.9)
 print(state_values)
 
