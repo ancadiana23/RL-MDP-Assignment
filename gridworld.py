@@ -53,7 +53,7 @@ class GridWorldEnv(discrete.DiscreteEnv):
         transition_prob = {}
         isd = np.zeros(state_count, dtype=np.float)
         for s in range(state_count):
-            print(f"calculating transitions {s}")
+            # print(f"calculating transitions {s}")
             # transition probabilities
             position = np.unravel_index(s, self.shape)
             transition_prob[s] = {a: [] for a in range(action_count)}

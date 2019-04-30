@@ -98,6 +98,7 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
             policy[state] = np.ones(len(env.P[state])) / len(env.P[state])
     # initialize the state values
     state_values = np.zeros(env.observation_space.n, dtype=np.float64)
+    curr_state_values = np.zeros(env.observation_space.n, dtype=np.float64)
     # initialize delta check
     delta = theta + 1.0
     while delta > theta:
@@ -113,9 +114,10 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
                     for prob, new_state, reward, _ in env.P[state][action]:
                         # calculate expected value using Bellman equation
                         state_values[state] += (
-                            action_prob * prob * (reward + discount_factor * state_values[new_state])
+                            action_prob * prob * (reward + discount_factor * curr_state_values[new_state])
                         )
                 delta = np.max((delta, np.abs(value - state_values[state])))
+        curr_state_values = np.copy(state_values)
     return state_values
 
 
