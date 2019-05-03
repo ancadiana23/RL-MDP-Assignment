@@ -2,7 +2,7 @@ import numpy as np
 import pprint
 from collections import defaultdict
 
-def prioritized_sweeping(env, discount_factor=1.0, theta=0.00001, alpha=0.1):
+def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 	pp = pprint.PrettyPrinter(indent=4)
 	N = 10
 	actions = range(env.nA)
@@ -16,8 +16,11 @@ def prioritized_sweeping(env, discount_factor=1.0, theta=0.00001, alpha=0.1):
 	init_state(state, state_action_values, model_transitions, model_rewards, previous_states, env.nA)
 
 	priority_queue = []
-	
-	for _ in range(500):
+	policy_stable = False
+	iterations = 0
+	while not policy_stable:
+		iterations += 1
+		policy_stable = True
 		action = policy(state, actions, state_action_values)
 		# we only receive the state and reward from the environment 
 		# because this is sequential learning
@@ -29,7 +32,13 @@ def prioritized_sweeping(env, discount_factor=1.0, theta=0.00001, alpha=0.1):
 		if (state, action) not in previous_states[new_state]:
 			previous_states[new_state] += [(state, action)]
 
+		old_transition = model_transitions[state][action].get(new_state, 0) / \
+						 (sum(model_transitions[state][action].values()) + 0.1) 
 		model_transitions[state][action][new_state] = model_transitions[state][action].get(new_state, 0) + 1
+		new_transition = model_transitions[state][action].get(new_state, 0) / \
+						 (sum(model_transitions[state][action].values()) + 0.1)
+		if abs(new_transition - old_transition) > theta:
+			policy_stable = False
 		model_rewards[state][action][new_state] = (model_rewards[state][action].get(new_state, 0) * 
 												  	(model_transitions[state][action][new_state] - 1) + reward) / \
 												   model_transitions[state][action][new_state]
@@ -43,11 +52,13 @@ def prioritized_sweeping(env, discount_factor=1.0, theta=0.00001, alpha=0.1):
 			priority_queue.remove((s, a, p))
 			new_s = get_transition(model_transitions, s, a)
 			reward = model_rewards[s][a][new_s]
-			state_action_values[s][a] = state_action_values[s][a] + \
-										alpha * (reward +  \
-											 	discount_factor * max(state_action_values[new_s]) - \
-											 	state_action_values[s][a])
-			
+			delta_sa_value = alpha * (reward +  \
+								 	discount_factor * max(state_action_values[new_s]) - \
+								 	state_action_values[s][a])
+			state_action_values[s][a] = state_action_values[s][a] + delta_sa_value
+			if abs(delta_sa_value) > theta:
+				policy_stable = False
+										
 			for (p_state, p_action) in previous_states[s]:
 				p_reward = model_rewards[p_state][p_action][s]
 				p = compute_priority(state_action_values, p_state, p_action, s, reward, discount_factor)
@@ -67,6 +78,7 @@ def prioritized_sweeping(env, discount_factor=1.0, theta=0.00001, alpha=0.1):
 	for state in state_action_values:
 		final_policy[state] = np.zeros(env.action_space.n)
 		final_policy[state][np.argmax(state_action_values[state])] = 1.0
+	print("Iterations {}".format(iterations))
 	'''
 	print("Model transitions")
 	pp.pprint(model_transitions)
@@ -79,7 +91,7 @@ def prioritized_sweeping(env, discount_factor=1.0, theta=0.00001, alpha=0.1):
 
 def policy(state, actions, state_action_values):
 	# Epsilon greedy
-	epsilon = 0.2
+	epsilon = 0.5
 	if np.random.uniform(low=0.0, high=1.0) < epsilon:
 		return np.random.choice(actions)
 	return np.argmax(state_action_values[state])

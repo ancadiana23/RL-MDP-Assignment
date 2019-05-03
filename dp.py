@@ -1,5 +1,6 @@
 """
  - Howard's Policy Iteration (Iterative Policy Evaluation and Policy Improvement)
+ - Simple Policy Iteration
  - Value Iteration
 """
 import numpy as np
@@ -51,7 +52,7 @@ def value_iteration(env, discount_factor=1.0, theta=0.00001):
     return policy, state_values
 
 
-def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001):
+def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001, simple=False):
     """
     Performs policy iteration by performing policy evaluation, then policy iteration
     sequentially until the policy does not change anymore.
@@ -69,11 +70,17 @@ def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001):
     state_values = None
     policy_stable = False
     # iterate while the policy isn't stable
+    iterations = 0
     while policy_stable is False:
+        iterations += 1
         # perform policy evaluation
         state_values = policy_evaluation(env, policy, discount_factor, theta)
         # perform policy iteration
-        policy_stable = policy_improvement(env, policy, state_values, discount_factor)
+        if simple:
+            policy_stable = simple_policy_improvement(env, policy, state_values, discount_factor)
+        else:
+            policy_stable = policy_improvement(env, policy, state_values, discount_factor)
+    print("Iterations {}".format(iterations))
     return policy, state_values
 
 
@@ -151,6 +158,41 @@ def policy_improvement(env, policy, state_values, discount_factor=1.0):
         policy[state] = np.eye(len(env.P[state]))[new_best_action]
     return policy_stable
 
+
+def simple_policy_improvement(env, policy, state_values, discount_factor=1.0):
+    """
+    Improves the policy based on the state values calculated using policy evaluation.
+    :param env: The OpenAI Gym environment:
+                 - env.P - transition probabilities of the environment
+                 - env.P[state][action] - a list of transition tuples
+                 - env.observation_space.n - number of states
+                 - env.action_space.n - number of actions
+    :param policy: the policy to be evaluated
+    :param state_values: the state values used in updating the policy
+    :param discount_factor: gamma the discount factor
+    :return: True if the policy is stable, and False otherwise.
+    """
+    # we assume that the policy is stable
+    policy_stable = True
+    # loop over each state
+    states = np.arange(0, env.nS)
+    np.random.shuffle(states)
+    for state in states:
+        # get the previous best action
+        old_best_action = np.argmax(policy[state])
+        # compute action values
+        action_values = get_action_values(state, env, state_values, discount_factor)
+        # get the new best action
+        new_best_action = np.argmax(action_values)
+
+        # update the policy of the state
+        policy[state] = np.eye(len(env.P[state]))[new_best_action]
+
+        if old_best_action != new_best_action:
+            # if the actions are different, then the policy isn't stable
+            policy_stable = False
+            break
+    return policy_stable
 
 def get_action_values(s, env, state_values, discount_factor=1.0):
     """
