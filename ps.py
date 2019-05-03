@@ -9,10 +9,14 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 
 	state = env.reset()
 	state_action_values = {}
+	# approximate transition probabilities
 	model_transitions = {}
+	# approximate rewards
 	model_rewards = {}
+	# for every state store the state-action tuple that could lead to the specific state
 	previous_states = {}
-		
+	
+	# add the initial state to the dictionaries
 	init_state(state, state_action_values, model_transitions, model_rewards, previous_states, env.nA)
 
 	priority_queue = []
@@ -21,24 +25,31 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 	while not policy_stable:
 		iterations += 1
 		policy_stable = True
+
+		# get the epsilon greedy action in the current state
 		action = policy(state, actions, state_action_values)
+		
 		# we only receive the state and reward from the environment 
 		# because this is sequential learning
 		(new_state, reward, _, _) = env.step(action)
 
+		# if we don't know anything about the new state, we add it to the dictionaries
 		if new_state not in model_transitions:
 			init_state(new_state, state_action_values, model_transitions, model_rewards, previous_states, env.nA)
 
 		if (state, action) not in previous_states[new_state]:
 			previous_states[new_state] += [(state, action)]
 
+		# compute the old and the updated transition probability
 		old_transition = model_transitions[state][action].get(new_state, 0) / \
 						 (sum(model_transitions[state][action].values()) + 0.1) 
 		model_transitions[state][action][new_state] = model_transitions[state][action].get(new_state, 0) + 1
 		new_transition = model_transitions[state][action].get(new_state, 0) / \
 						 (sum(model_transitions[state][action].values()) + 0.1)
+		# check if the probability is stable
 		if abs(new_transition - old_transition) > theta:
 			policy_stable = False
+		# update the approx. value for the reward of the transition
 		model_rewards[state][action][new_state] = (model_rewards[state][action].get(new_state, 0) * 
 												  	(model_transitions[state][action][new_state] - 1) + reward) / \
 												   model_transitions[state][action][new_state]
@@ -48,32 +59,43 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 		for i in range(N):
 			if len(priority_queue) == 0:
 				break
+			# extract the first element in the priority queue
 			(s, a, p) = max(priority_queue, key=lambda x: x[2])
 			priority_queue.remove((s, a, p))
+
+			# get the transition and reward for the action using the model of the environment
 			new_s = get_transition(model_transitions, s, a)
 			reward = model_rewards[s][a][new_s]
+
+			# update the state action values (Q) and check for its convergence
 			delta_sa_value = alpha * (reward +  \
 								 	discount_factor * max(state_action_values[new_s]) - \
 								 	state_action_values[s][a])
 			state_action_values[s][a] = state_action_values[s][a] + delta_sa_value
 			if abs(delta_sa_value) > theta:
 				policy_stable = False
-										
+			
+			# add the state-action tuples that could end in the current state to the priority queue
+			# if they have a high enough priority		
 			for (p_state, p_action) in previous_states[s]:
 				p_reward = model_rewards[p_state][p_action][s]
 				p = compute_priority(state_action_values, p_state, p_action, s, reward, discount_factor)
 				if p > theta:
 					priority_queue += [(p_state, p_action, p)]
+		# if we reached a final state restart the game
+		# otherwise move to the next state
 		if env.terminal_states[new_state]:
 			state = env.reset()
 		else:
 			state = new_state
 
+	# compute the final transition probabilities
 	for state in model_transitions:
 		for action in model_transitions[state]:
 			sum_values = sum(model_transitions[state][action].values()) 
 			for new_state in model_transitions[state][action]:
 				model_transitions[state][action][new_state] /= sum_values
+	# define a greedy policy based on the state-action values
 	final_policy = defaultdict(lambda: np.ones(env.action_space.n) / env.action_space.n)
 	for state in state_action_values:
 		final_policy[state] = np.zeros(env.action_space.n)

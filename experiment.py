@@ -137,7 +137,8 @@ print("Value States -> \n", state_values)
 # env.render_policy(policy=policy)
 # print("Value States -> \n", state_values)
 # print_state_latex(state_values)
-plot_stuff(deltas_value, deltas_iteration)
+
+#plot_stuff(deltas_value, deltas_iteration)
 
 policy, state_values, deltas_iteration, t = dp.policy_iteration(env=env, discount_factor=0.9, simple=True)
 print("Optimal policy found using Simple Policy Iteration algorithm [0.9] found in ")

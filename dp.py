@@ -130,7 +130,9 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
     curr_state_values = np.zeros(env.observation_space.n, dtype=np.float64)
     # initialize delta check
     delta = theta + 1.0
+    iterations = 0
     while delta > theta:
+        iterations += 1
         delta = 0
         # loop over all the states
         for state in env.P.keys():
@@ -148,6 +150,7 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
                 delta = np.max((delta, np.abs(value - state_values[state])))
                 deltas.append(delta)
         curr_state_values = np.copy(state_values)
+    #print("Evaluation iterations {}".format(iterations))
     return state_values, deltas
 
 
