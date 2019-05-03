@@ -53,7 +53,7 @@ def linear_programming(env, discount_factor=1.0):
     m = 4
     set_I = range(0, n)
     set_J = range(0, m)
-    c = {(i, j): list() for i in set_I for j in set_J}
+    c = {(i, j): 0 for i in set_I for j in set_J}
     p = {(i, j, ni): list() for i in set_I for j in set_J for ni in set_I}
 
     # C = list()
@@ -64,12 +64,12 @@ def linear_programming(env, discount_factor=1.0):
         for a in env.P[state].keys():
             value_cost = 0
             for prob, next_state, reward, _ in env.P[state][a]:
-                best_reward = max([reward for prob, next_state, reward, _ in env.P[state][a]])
-                value_cost += prob * (best_reward - reward)  # C_state_action
+                # best_reward = max([reward for prob, next_state, reward, _ in env.P[state][a]])
+                value_cost += prob * -reward  # C_state_action
                 p[(state, a, next_state)].append(prob)
             # if len(p[(state, a, next_state)]) == 1:
             #     p[(state, a, next_state)].append(0)
-            c[(state, a)].append(value_cost)
+            c[(state, a)] = value_cost
 
     p = {(i, j, ni): p[i, j, ni] if p[i, j, ni] else [0] for i in set_I for j in set_J for ni in set_I}
 
@@ -93,7 +93,7 @@ def linear_programming(env, discount_factor=1.0):
 
     # if x is Continuous
     x_vars = {
-        (i, j): plp.LpVariable(cat=plp.LpInteger, name="x_{0}_{1}".format(i, j))
+        (i, j): plp.LpVariable(cat=plp.LpInteger, name="x_{0}_{1}".format(i, j), lowBound=0)
         for i in set_I
         for j in set_J
     }
@@ -120,7 +120,7 @@ def linear_programming(env, discount_factor=1.0):
     #     )
     #     for ni in set_I
     # }
-    opt_model += plp.lpSum(x_vars[i, k] * c[i, k][0] for i in set_I for k in set_J)
+    opt_model += plp.lpSum(x_vars[i, k] * c[i, k] for i in set_I for k in set_J)
     
     for ni in set_I:
         opt_model += 1 + (discount_factor * plp.lpSum(
