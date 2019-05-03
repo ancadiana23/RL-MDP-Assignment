@@ -4,6 +4,7 @@
  - Value Iteration
 """
 import numpy as np
+import time
 from collections import defaultdict
 
 
@@ -19,6 +20,9 @@ def value_iteration(env, discount_factor=1.0, theta=0.00001):
     :param theta: we stop iterating once the state value changes are less than theta
     :return:
     """
+    deltas = list()
+    t1_start = time.perf_counter()
+    t1_cpu_start = time.process_time()
     # initialize the state values
     state_values = np.zeros(env.observation_space.n, dtype=np.float64)
     # initialize delta check
@@ -34,6 +38,7 @@ def value_iteration(env, discount_factor=1.0, theta=0.00001):
             best_action_value = np.max(action_values)
             # update delta
             delta = np.max((delta, np.abs(best_action_value - state_values[state])))
+            deltas.append(delta)
             # update state value
             state_values[state] = best_action_value
     # initialize the policy
@@ -49,7 +54,11 @@ def value_iteration(env, discount_factor=1.0, theta=0.00001):
         # update policy
         policy[state] = np.eye(len(env.P[state]))[best_action]
         # print(policy[state])
-    return policy, state_values
+    t1_stop = time.perf_counter()
+    t1_cpu_stop = time.process_time()
+    time_elapsed = t1_stop - t1_start
+    time_cpu_elapsed = t1_cpu_stop - t1_cpu_start
+    return policy, state_values, deltas, (time_elapsed, time_cpu_elapsed)
 
 
 def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001, simple=False):
@@ -62,6 +71,9 @@ def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001, simpl
     :param theta: we stop iterating once the state value changes are less than theta
     :return: the policy and the state values
     """
+    deltas = list()
+    t1_start = time.perf_counter()
+    t1_cpu_start = time.process_time()
     # initialize the policy if it is None
     if policy is None:
         policy = defaultdict(lambda: np.ones(env.action_space.n) / env.action_space.n)
@@ -74,14 +86,23 @@ def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001, simpl
     while policy_stable is False:
         iterations += 1
         # perform policy evaluation
-        state_values = policy_evaluation(env, policy, discount_factor, theta)
+        state_values, delta = policy_evaluation(env, policy, discount_factor, theta)
         # perform policy iteration
         if simple:
             policy_stable = simple_policy_improvement(env, policy, state_values, discount_factor)
         else:
             policy_stable = policy_improvement(env, policy, state_values, discount_factor)
+        deltas.append(delta)
+    t1_stop = time.perf_counter()
+    t1_cpu_stop = time.process_time()
+    time_elapsed = t1_stop - t1_start
+    time_cpu_elapsed = t1_cpu_stop - t1_cpu_start
+    # print("----------------------------")
+    # print("Elapsed time: %.5f [sec]" % (time_elapsed))
+    # print("CPU elapsed time: %.5f [sec]" % (time_cpu_elapsed))
+    # print("----------------------------")
     print("Iterations {}".format(iterations))
-    return policy, state_values
+    return policy, state_values, deltas, (time_elapsed, time_cpu_elapsed)
 
 
 def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
@@ -99,6 +120,7 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
     :param theta: we stop iterating once the state value changes are less than theta
     :return: the state values computes
     """
+    deltas = list()
     if policy is None:
         policy = defaultdict(lambda: np.ones(env.action_space.n) / env.action_space.n)
         for state in env.P.keys():
@@ -124,8 +146,9 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
                             action_prob * prob * (reward + discount_factor * curr_state_values[new_state])
                         )
                 delta = np.max((delta, np.abs(value - state_values[state])))
+                deltas.append(delta)
         curr_state_values = np.copy(state_values)
-    return state_values
+    return state_values, deltas
 
 
 def policy_improvement(env, policy, state_values, discount_factor=1.0):
