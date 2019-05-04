@@ -81,6 +81,7 @@ def plot_stuff(deltas_value, deltas_iteration):
     # plt.text(0.5, 0.02, 'Time', ha='center', va='center')
     # plt.text(0.06, 0.5, 'Note', ha='center', va='center', rotation='vertical')
 
+
 env = GridWorldEnv()
 
 print("Policy evaluation using policy evaluation")
@@ -139,7 +140,7 @@ print("Value States -> \n", state_values)
 # print("Value States -> \n", state_values)
 # print_state_latex(state_values)
 
-#plot_stuff(deltas_value, deltas_iteration)
+# plot_stuff(deltas_value, deltas_iteration)
 
 policy, state_values, deltas_iteration, t = dp.policy_iteration(env=env, discount_factor=0.9, simple=True)
 print("Optimal policy found using Simple Policy Iteration algorithm [0.9] found in ")
