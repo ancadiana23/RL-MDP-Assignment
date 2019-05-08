@@ -95,6 +95,7 @@ print("Elapsed time: %.5f [sec]" % (t[0]))
 print("CPU elapsed time: %.5f [sec]" % (t[1]))
 env.render_policy(policy=policy)
 print(state_values)
+# print_state_latex(state_values)
 
 # policy, state_values, deltas_value, t = dp.value_iteration(env, discount_factor=0.6)
 
