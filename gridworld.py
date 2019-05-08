@@ -70,9 +70,6 @@ class GridWorldEnv(discrete.DiscreteEnv):
             else:
                 self.terminal_states[current_state] = False
 
-        # Calculate actual probabilities for isd
-        isd = isd / np.sum(isd)
-
         super(GridWorldEnv, self).__init__(state_count, action_count, transition_prob, isd)
 
     def _calculate_transition_prob(self, current, delta):

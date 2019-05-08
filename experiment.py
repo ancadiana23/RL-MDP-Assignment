@@ -1,5 +1,6 @@
 import dp
 import ps
+import learnalg
 from gridworld import GridWorldEnv
 import time
 import numpy as np
@@ -7,23 +8,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def print_state_latex(states):
-    print(
-        "\\multicolumn{1}{|l|}{\\textbf{0}}"
-        + f"& {np.around(states[0],5)}    & {np.around(states[1],5)}      & {np.around(states[2],5)}      & {np.around(states[3],5)}         \\\\ \\hline"
-    )
-    print(
-        "\\multicolumn{1}{|l|}{\\textbf{0}}"
-        + f"& {np.around(states[4],5)}    & {np.around(states[5],5)}      & {np.around(states[6],5)}      & {np.around(states[7],5)}         \\\\ \\hline"
-    )
-    print(
-        "\\multicolumn{1}{|l|}{\\textbf{0}}"
-        + f"& {np.around(states[8],5)}    & {np.around(states[9],5)}      & {np.around(states[10],5)}       & {np.around(states[11],5)}          \\\\ \\hline"
-    )
-    print(
-        "\\multicolumn{1}{|l|}{\\textbf{0}}"
-        + f"& {np.around(states[12],5)}     & {np.around(states[13],5)}      & {np.around(states[14],5)}       & {np.around(states[15],5)}          \\\\ \\hline"
-    )
+# def print_state_latex(states):
+#     print(
+#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
+#         + f"& {np.around(states[0],5)}    & {np.around(states[1],5)}      & {np.around(states[2],5)}      & {np.around(states[3],5)}         \\\\ \\hline"
+#     )
+#     print(
+#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
+#         + f"& {np.around(states[4],5)}    & {np.around(states[5],5)}      & {np.around(states[6],5)}      & {np.around(states[7],5)}         \\\\ \\hline"
+#     )
+#     print(
+#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
+#         + f"& {np.around(states[8],5)}    & {np.around(states[9],5)}      & {np.around(states[10],5)}       & {np.around(states[11],5)}          \\\\ \\hline"
+#     )
+#     print(
+#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
+#         + f"& {np.around(states[12],5)}     & {np.around(states[13],5)}      & {np.around(states[14],5)}       & {np.around(states[15],5)}          \\\\ \\hline"
+#     )
 
 
 def plot_stuff(deltas_value, deltas_iteration):
@@ -84,18 +85,18 @@ def plot_stuff(deltas_value, deltas_iteration):
 
 env = GridWorldEnv()
 
-print("Policy evaluation using policy evaluation")
-state_values, _ = dp.policy_evaluation(env=env, discount_factor=0.9)
-print("Value States-> \n", state_values)
-# print_state_latex(state_values)
+# print("Policy evaluation using policy evaluation")
+# state_values, _ = dp.policy_evaluation(env=env, discount_factor=0.9)
+# print("Value States-> \n", state_values)
+# # print_state_latex(state_values)
 
-policy, state_values, deltas_value, t = dp.value_iteration(env, discount_factor=0.9)
+# policy, state_values, deltas_value, t = dp.value_iteration(env, discount_factor=0.9)
 
-print("Optimal policy found using Value Iteration algorithm  [0.9] found in ")
-print("Elapsed time: %.5f [sec]" % (t[0]))
-print("CPU elapsed time: %.5f [sec]" % (t[1]))
-env.render_policy(policy=policy)
-print(state_values)
+# print("Optimal policy found using Value Iteration algorithm  [0.9] found in ")
+# print("Elapsed time: %.5f [sec]" % (t[0]))
+# print("CPU elapsed time: %.5f [sec]" % (t[1]))
+# env.render_policy(policy=policy)
+# print(state_values)
 # print_state_latex(state_values)
 
 # policy, state_values, deltas_value, t = dp.value_iteration(env, discount_factor=0.6)
@@ -117,12 +118,12 @@ print(state_values)
 # # print_state_latex(state_values)
 
 
-policy, state_values, deltas_iteration, t = dp.policy_iteration(env=env, discount_factor=0.9)
-print("Optimal policy found using Policy Iteration algorithm [0.9] found in ")
-print("Elapsed time: %.5f [sec]" % (t[0]))
-print("CPU elapsed time: %.5f [sec]" % (t[1]))
-env.render_policy(policy=policy)
-print("Value States -> \n", state_values)
+# policy, state_values, deltas_iteration, t = dp.policy_iteration(env=env, discount_factor=0.9)
+# print("Optimal policy found using Policy Iteration algorithm [0.9] found in ")
+# print("Elapsed time: %.5f [sec]" % (t[0]))
+# print("CPU elapsed time: %.5f [sec]" % (t[1]))
+# env.render_policy(policy=policy)
+# print("Value States -> \n", state_values)
 
 # policy, state_values, deltas_iteration, t = dp.policy_iteration(env=env, discount_factor=0.6)
 # print("Optimal policy found using Policy Iteration algorithm [0.6] found in ")
@@ -142,21 +143,28 @@ print("Value States -> \n", state_values)
 
 # plot_stuff(deltas_value, deltas_iteration)
 
-policy, state_values, deltas_iteration, t = dp.policy_iteration(env=env, discount_factor=0.9, simple=True)
-print("Optimal policy found using Simple Policy Iteration algorithm [0.9] found in ")
-print("Elapsed time: %.5f [sec]" % (t[0]))
-print("CPU elapsed time: %.5f [sec]" % (t[1]))
+# policy, state_values, deltas_iteration, t = dp.policy_iteration(env=env, discount_factor=0.9, simple=True)
+# print("Optimal policy found using Simple Policy Iteration algorithm [0.9] found in ")
+# print("Elapsed time: %.5f [sec]" % (t[0]))
+# print("CPU elapsed time: %.5f [sec]" % (t[1]))
+# env.render_policy(policy=policy)
+# print("Value States -> \n", state_values)
+
+
+# t2_start = time.perf_counter()
+# t2_cpu_start = time.process_time()
+# policy = ps.prioritized_sweeping(env=env, discount_factor=0.9)
+# t2_stop = time.perf_counter()
+# t2_cpu_stop = time.process_time()
+# time_elapsed_2 = t2_stop - t2_start
+# time_cpu_elapsed_2 = t2_cpu_stop - t2_cpu_start
+# env.render_policy(policy=policy)
+
+# print("Time elapsed {} and time elapsed cpu {}".format(time_elapsed_2, time_cpu_elapsed_2))
+
+q = learnalg.q_learning(env, 1500, epsilon=0.1, alpha=0.01)
+policy = learnalg.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
+print("")
+for item in q:
+    print(f"state {item} - Actions {q[item]}")
 env.render_policy(policy=policy)
-print("Value States -> \n", state_values)
-
-
-t2_start = time.perf_counter()
-t2_cpu_start = time.process_time()
-policy = ps.prioritized_sweeping(env=env, discount_factor=0.9)
-t2_stop = time.perf_counter()
-t2_cpu_stop = time.process_time()
-time_elapsed_2 = t2_stop - t2_start
-time_cpu_elapsed_2 = t2_cpu_stop - t2_cpu_start
-env.render_policy(policy=policy)
-
-print("Time elapsed {} and time elapsed cpu {}".format(time_elapsed_2, time_cpu_elapsed_2))
