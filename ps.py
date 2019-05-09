@@ -1,8 +1,9 @@
 import numpy as np
 import pprint
 from collections import defaultdict
+import dp
 
-def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
+def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.05):
 	pp = pprint.PrettyPrinter(indent=4)
 	N = 10
 	actions = range(env.nA)
@@ -22,7 +23,8 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 	priority_queue = []
 	policy_stable = False
 	iterations = 0
-	while not policy_stable:
+	for step in range(700):
+		#while not policy_stable:
 		iterations += 1
 		policy_stable = True
 
@@ -41,11 +43,11 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 			previous_states[new_state] += [(state, action)]
 
 		# compute the old and the updated transition probability
-		old_transition = model_transitions[state][action].get(new_state, 0) / \
-						 (sum(model_transitions[state][action].values()) + 0.1) 
-		model_transitions[state][action][new_state] = model_transitions[state][action].get(new_state, 0) + 1
-		new_transition = model_transitions[state][action].get(new_state, 0) / \
-						 (sum(model_transitions[state][action].values()) + 0.1)
+		old_transition = compute_transition(model_transitions[state][action], new_state) 
+		model_transitions[state][action][new_state] = \
+			model_transitions[state][action].get(new_state, 0) + 1
+		new_transition = compute_transition(model_transitions[state][action], new_state) 
+
 		# check if the probability is stable
 		if abs(new_transition - old_transition) > theta:
 			policy_stable = False
@@ -82,6 +84,9 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 				p = compute_priority(state_action_values, p_state, p_action, s, reward, discount_factor)
 				if p > theta:
 					priority_queue += [(p_state, p_action, p)]
+		if step % 50 == 0:
+			alpha = alpha * 0.9
+		
 		# if we reached a final state restart the game
 		# otherwise move to the next state
 		if env.terminal_states[new_state]:
@@ -89,18 +94,16 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 		else:
 			state = new_state
 
+	
+	print("Iterations {}".format(iterations))
+
 	# compute the final transition probabilities
 	for state in model_transitions:
 		for action in model_transitions[state]:
 			sum_values = sum(model_transitions[state][action].values()) 
 			for new_state in model_transitions[state][action]:
 				model_transitions[state][action][new_state] /= sum_values
-	# define a greedy policy based on the state-action values
-	final_policy = defaultdict(lambda: np.ones(env.action_space.n) / env.action_space.n)
-	for state in state_action_values:
-		final_policy[state] = np.zeros(env.action_space.n)
-		final_policy[state][np.argmax(state_action_values[state])] = 1.0
-	print("Iterations {}".format(iterations))
+	
 	'''
 	print("Model transitions")
 	pp.pprint(model_transitions)
@@ -109,25 +112,49 @@ def prioritized_sweeping(env, discount_factor=0.9, theta=0.0001, alpha=0.9):
 	print("State Action values")
 	pp.pprint(state_action_values)
 	'''
+	return compute_and_evaluate_policy(env, state_action_values)
+
+
+def compute_and_evaluate_policy(env, state_action_values):
+	# define a greedy policy based on the state-action values
+	final_policy = defaultdict(lambda: np.ones(env.action_space.n) / env.action_space.n)
+	for state in state_action_values:
+		final_policy[state] = np.zeros(env.action_space.n)
+		final_policy[state][np.argmax(state_action_values[state])] = 1.0
+	state_values, deltas = dp.policy_evaluation(env=env, policy=final_policy, discount_factor=0.9)
+	print("Policy evaluation Prioritized Sweeping")
+	print(state_values)
 	return final_policy
+
 
 def policy(state, actions, state_action_values):
 	# Epsilon greedy
-	epsilon = 0.5
+	epsilon = 0.2
 	if np.random.uniform(low=0.0, high=1.0) < epsilon:
 		return np.random.choice(actions)
 	return np.argmax(state_action_values[state])
+
 
 def get_transition(model, state, action):
 	probabilities = np.array(list(model[state][action].values())) / sum(model[state][action].values())
 	state = np.random.choice(np.array(list(model[state][action].keys())), p=probabilities)
 	return state
 
+
 def compute_priority(state_action_values, state, action, new_state, reward, discount_factor):
 	p = abs(reward + 
 			discount_factor * max(state_action_values[new_state]) - 
 			state_action_values[state][action])
 	return p
+
+
+def compute_transition(model_transitions, new_state):
+	if sum(model_transitions.values()) == 0:
+		return 0
+	transition = model_transitions.get(new_state, 0) / \
+					sum(model_transitions.values()) 
+	return transition
+
 
 def init_state(state, state_action_values, model_transitions, model_rewards, previous_states, nA):
 	state_action_values[state] = [0] * nA
