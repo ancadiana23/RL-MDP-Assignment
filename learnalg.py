@@ -10,10 +10,8 @@ def make_epsilon_greedy_policy(action_count: int, q: dict, epsilon=0.0):
     :param q: A dictionary that maps from a state to the action values
     for all possible nA actions (represented as an array)
     :param epsilon: Probability to select a random action
-    :param distribute_prob: Whether or not to distribute the probability between best actions
-                            or just choose the first best action an assign it all the probability mass.
-    :return: A function that takes as argument an observation and returns
-             the probabilities of each action.
+    :return: A function that takes and observation and output 
+        probabilities of each action.
     """
 
     def policy_func(observation, eps=epsilon):
@@ -51,8 +49,6 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, e
     # initialize the policy for the Q function case
     policy = make_epsilon_greedy_policy(env.action_space.n, epsilon=epsilon, q=q)
     # loop for each episode
-    # tqdm nice for visualization
-    # for episode in tqdm(range(num_episodes)):
     for episode in range(num_episodes):
         print_in_line(episode)
         # initialize the state
@@ -74,7 +70,7 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, e
             # check for finished episode
             if done:
                 break
-            # otherwise update state
+            # otherwise update state and increase the t
             t += 1
             state = next_state
     return q
