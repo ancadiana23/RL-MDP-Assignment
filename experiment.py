@@ -1,11 +1,15 @@
-import dp
-import ps
-import learnalg
 from gridworld import GridWorldEnv
-import time
-import numpy as np
+
+import dp
+import learnalg
+import ps
+
+from collections import defaultdict
 
 import matplotlib.pyplot as plt
+import numpy as np
+import utils
+import time
 
 
 # def print_state_latex(states):
@@ -161,10 +165,11 @@ env = GridWorldEnv()
 # env.render_policy(policy=policy)
 
 # print("Time elapsed {} and time elapsed cpu {}".format(time_elapsed_2, time_cpu_elapsed_2))
-
-q = learnalg.q_learning(env, 1500, epsilon=0.1, alpha=0.01)
-policy = learnalg.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
+q = defaultdict(lambda: np.zeros(env.action_space.n))
+train_policy = utils.make_softmax_policy(env.action_space.n, temperature=1.3, q=q)
+q = learnalg.q_learning(env, 1500, alpha=0.01, q=q, policy=train_policy)
+policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
 print("")
-for item in q:
+for item in sorted(q.keys()):
     print(f"state {item} - Actions {q[item]}")
 env.render_policy(policy=policy)

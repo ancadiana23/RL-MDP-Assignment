@@ -1,27 +1,9 @@
-import numpy as np
 from collections import defaultdict
+
+import numpy as np
 import sys
 
-
-def make_epsilon_greedy_policy(action_count: int, q: dict, epsilon=0.0):
-    """
-    This function creates an epsilon greedy policy based on the given Q.
-    :param action_count: Number of actions
-    :param q: A dictionary that maps from a state to the action values
-    for all possible nA actions (represented as an array)
-    :param epsilon: Probability to select a random action
-    :return: A function that takes and observation and output 
-        probabilities of each action.
-    """
-
-    def policy_func(observation, eps=epsilon):
-        actions = np.ones(action_count, dtype=float) * eps / action_count
-        q_values = q[observation]
-        best_action = np.argmax(q_values)
-        actions[best_action] += 1.0 - eps
-        return actions
-
-    return policy_func
+import utils
 
 
 def print_in_line(episode_i):
@@ -30,7 +12,7 @@ def print_in_line(episode_i):
 
 
 # TODO: SAVE the T for episode.
-def q_learning(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, epsilon=0.1):
+def q_learning(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy=None):
     """
     Q-Learning (off-policy control) algorithm implementation as described in
     http://incompleteideas.net/sutton/book/ebook/node65.html.
@@ -45,9 +27,8 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, e
     # initialize the action value function
     if q is None:
         q = defaultdict(lambda: np.zeros(env.action_space.n))
-    policy = None
-    # initialize the policy for the Q function case
-    policy = make_epsilon_greedy_policy(env.action_space.n, epsilon=epsilon, q=q)
+        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.1, q=q)
+        
     # loop for each episode
     for episode in range(num_episodes):
         print_in_line(episode)
