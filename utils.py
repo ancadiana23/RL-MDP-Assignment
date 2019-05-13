@@ -1,4 +1,17 @@
 import numpy as np
+import sys
+
+
+def print_in_line(episode_i, max_episodes):
+    episode_i += 1
+    episode = np.round(episode_i * 100 / max_episodes)
+    filling = "#" * int(episode)
+    sys.stdout.write("{0}% - [{1}]   \r".format(episode, filling))
+    sys.stdout.flush()
+    if episode_i == max_episodes:
+        sys.stdout.write("[{0}] - DONE   \r".format(filling))
+        sys.stdout.flush()
+        print("")
 
 
 def make_epsilon_greedy_policy(action_count: int, q: dict, epsilon=0.0):
