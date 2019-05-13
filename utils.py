@@ -9,8 +9,6 @@ def print_in_line(episode_i, max_episodes):
     sys.stdout.write("{0}% - [{1}]   \r".format(episode, filling))
     sys.stdout.flush()
     if episode_i == max_episodes:
-        sys.stdout.write("[{0}] - DONE   \r".format(filling))
-        sys.stdout.flush()
         print("")
 
 
