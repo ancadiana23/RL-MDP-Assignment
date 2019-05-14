@@ -166,8 +166,8 @@ env = GridWorldEnv()
 
 # print("Time elapsed {} and time elapsed cpu {}".format(time_elapsed_2, time_cpu_elapsed_2))
 
-alpha = 0.01
-num_iterations = 1500
+alpha = 0.1
+num_iterations = 1000
 
 q_sarsa = learnalg.sarsa(env, num_iterations, alpha=alpha)
 policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q_sarsa)
@@ -181,7 +181,7 @@ env.render_policy(policy=policy)
 # train_policy = utils.make_softmax_policy(env.action_space.n, temperature=1.3, q=q)
 # q = learnalg.q_learning(env, 1500, alpha=0.01, q=q, policy=train_policy)
 q = learnalg.q_learning(env, num_iterations, alpha=alpha)
-policy = utils.make_epsilon_greedy_policy(epsilon=0.1, action_count=env.action_space.n, q=q)
+policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
 print("Q-Learning")
 for item in sorted(q.keys()):
     print(f"state {item} - Actions {q[item]}")
@@ -193,4 +193,11 @@ policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_s
 print("Double Q_Learning")
 for item in sorted(q_A.keys()):
     print(f"state {item} - Actions {q_A[item]}")
+env.render_policy(policy=policy)
+
+q = learnalg.q_learning_experience(env, num_iterations, alpha=alpha)
+policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
+print("Q-Learning with experience relay")
+for item in sorted(q.keys()):
+    print(f"state {item} - Actions {q[item]}")
 env.render_policy(policy=policy)
