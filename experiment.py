@@ -169,7 +169,7 @@ env = GridWorldEnv()
 #q = defaultdict(lambda: np.zeros(env.action_space.n))
 #train_policy = utils.make_softmax_policy(env.action_space.n, temperature=1.3, q=q)
 #q = learnalg.q_learning(env, 1500, alpha=0.01, q=q, policy=train_policy)
-q = learnalg.q_learning(env, 1500, alpha=0.01)
+q = learnalg.q_learning(env, 2000, alpha=0.005)
 policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
 print("")
 for item in sorted(q.keys()):
@@ -177,7 +177,7 @@ for item in sorted(q.keys()):
 env.render_policy(policy=policy)
 
 
-q_A = learnalg.q_learning(env, 1500, alpha=0.01)
+q_A = learnalg.q_learning(env, 1500, alpha=0.005)
 policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q_A)
 print("")
 for item in sorted(q_A.keys()):

@@ -12,7 +12,7 @@ def print_in_line(episode_i):
 
 
 # TODO: SAVE the T for episode.
-def q_learning(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy=None):
+def q_learning(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, policy=None):
     """
     Q-Learning (off-policy control) algorithm implementation as described in
     http://incompleteideas.net/sutton/book/ebook/node65.html.
@@ -57,7 +57,7 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, p
     return q
 
 
-def double_q_learning(env, num_episodes: int, q_A=None, q_B=None, discount_factor=1.0, alpha=0.3, policy_A=None, policy_B=None):
+def double_q_learning(env, num_episodes: int, q_A=None, q_B=None, discount_factor=0.9, alpha=0.3, policy_A=None, policy_B=None):
     """
     Double Q-Learning (off-policy control) algorithm implementation as described in
     http://incompleteideas.net/sutton/book/ebook/node65.html.
