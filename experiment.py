@@ -166,20 +166,49 @@ env = GridWorldEnv()
 
 # print("Time elapsed {} and time elapsed cpu {}".format(time_elapsed_2, time_cpu_elapsed_2))
 
+<<<<<<< HEAD
 #q = defaultdict(lambda: np.zeros(env.action_space.n))
 #train_policy = utils.make_softmax_policy(env.action_space.n, temperature=1.3, q=q)
 #q = learnalg.q_learning(env, 1500, alpha=0.01, q=q, policy=train_policy)
 q = learnalg.q_learning(env, 2000, alpha=0.005)
+=======
+alpha = 0.1
+num_iterations = 1000
+
+q_sarsa = learnalg.sarsa(env, num_iterations, alpha=alpha)
+policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q_sarsa)
+print("SARSA")
+for item in sorted(q_sarsa.keys()):
+    print(f"state {item} - Actions {q_sarsa[item]}")
+env.render_policy(policy=policy)
+
+
+# q = defaultdict(lambda: np.zeros(env.action_space.n))
+# train_policy = utils.make_softmax_policy(env.action_space.n, temperature=1.3, q=q)
+# q = learnalg.q_learning(env, 1500, alpha=0.01, q=q, policy=train_policy)
+q = learnalg.q_learning(env, num_iterations, alpha=alpha)
+>>>>>>> a27d2afaf57cd5d328a278a0a837ab5e293e401b
 policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
-print("")
+print("Q-Learning")
 for item in sorted(q.keys()):
     print(f"state {item} - Actions {q[item]}")
 env.render_policy(policy=policy)
 
 
+<<<<<<< HEAD
 q_A = learnalg.q_learning(env, 1500, alpha=0.005)
+=======
+q_A = learnalg.double_q_learning(env, num_iterations, alpha=alpha)
+>>>>>>> a27d2afaf57cd5d328a278a0a837ab5e293e401b
 policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q_A)
-print("")
+print("Double Q_Learning")
 for item in sorted(q_A.keys()):
     print(f"state {item} - Actions {q_A[item]}")
+env.render_policy(policy=policy)
+
+q = learnalg.q_learning_experience(env, num_iterations, alpha=alpha)
+policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
+print("Q-Learning with experience relay")
+for item in sorted(q.keys()):
+    print(f"state {item} - Actions {q[item]}")
 env.render_policy(policy=policy)

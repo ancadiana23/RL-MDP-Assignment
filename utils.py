@@ -1,4 +1,15 @@
 import numpy as np
+import sys
+
+
+def print_in_line(episode_i, max_episodes):
+    episode_i += 1
+    episode = np.round(episode_i * 100 / max_episodes)
+    filling = "#" * int(episode)
+    sys.stdout.write("{0}% - [{1}]   \r".format(episode, filling))
+    sys.stdout.flush()
+    if episode_i == max_episodes:
+        print("")
 
 
 def make_epsilon_greedy_policy(action_count: int, q: dict, epsilon=0.0):
@@ -11,6 +22,10 @@ def make_epsilon_greedy_policy(action_count: int, q: dict, epsilon=0.0):
     :return: A function that takes and observation and output 
         probabilities of each action.
     """
+
+    # def randargmax(b, **kw):
+    #     """ a random tie-breaking argmax"""
+    #     return np.argmax(np.random.random(b.shape) * (b == b.max()), **kw)
 
     def policy_func(observation, eps=epsilon):
         actions = np.ones(action_count, dtype=float) * eps / action_count
