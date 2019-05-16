@@ -53,7 +53,9 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, p
     return q
 
 
-def q_learning_experience(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy=None):
+def q_learning_experience(
+    env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, T=2, N=100, policy=None
+):
     """
     Q-Learning (off-policy control) algorithm implementation as described in
     http://incompleteideas.net/sutton/book/ebook/node65.html.
@@ -65,13 +67,13 @@ def q_learning_experience(env, num_episodes: int, q=None, discount_factor=1.0, a
     :param policy: The policy to use during training
     :return: q the optimal value function
     """
-    T = 15  # Length of each trajectory
-    N = 10  # Number of replays
+    # T = 2  # Length of each trajectory
+    # N = 100  # Number of replays
     l = 1  # trajectories index
     # initialize the action value function
     if q is None:
         q = defaultdict(lambda: np.zeros(env.action_space.n))
-        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.1, q=q)
+        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.2, q=q)
         d = deque(maxlen=N)
     # loop for each episode
     for episode in range(num_episodes):
@@ -98,13 +100,13 @@ def q_learning_experience(env, num_episodes: int, q=None, discount_factor=1.0, a
             # otherwise update state and increase the t
             t += 1
             state = next_state
-            if episode == l * (T):
-                for _ in range(N * l * T):
-                    (state, action, reward, next_state, best_next_action) = random.sample(d, 1)[0]
-                    q[state][action] += alpha * (
-                        reward + discount_factor * q[next_state][best_next_action] - q[state][action]
-                    )
-                l += 1
+        if episode == l * T:
+            for _ in range(N * l * T):
+                (state, action, reward, next_state, best_next_action) = random.sample(d, 1)[0]
+                q[state][action] += alpha * (
+                    reward + discount_factor * q[next_state][best_next_action] - q[state][action]
+                )
+            l += 1
     return q
 
 

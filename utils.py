@@ -23,9 +23,9 @@ def make_epsilon_greedy_policy(action_count: int, q: dict, epsilon=0.0):
         probabilities of each action.
     """
 
-    # def randargmax(b, **kw):
-    #     """ a random tie-breaking argmax"""
-    #     return np.argmax(np.random.random(b.shape) * (b == b.max()), **kw)
+    def randargmax(b, **kw):
+        """ a random tie-breaking argmax"""
+        return np.argmax(np.random.random(b.shape) * (b == b.max()), **kw)
 
     def policy_func(observation, eps=epsilon):
         actions = np.ones(action_count, dtype=float) * eps / action_count
