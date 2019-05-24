@@ -6,7 +6,6 @@ import random
 import utils
 
 
-# TODO: SAVE the T for episode.
 def q_learning(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, policy=None):
     """
     Q-Learning (off-policy control) algorithm implementation as described in
@@ -18,7 +17,13 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, p
     :param alpha: The learning rate
     :param policy: The policy to use during training
     :return: q the optimal value function
+    :return iterations number of iterations per episode
+    :return rewards accumulative reward per episode
     """
+    # initilize arrays for holding stats by episide
+    iterations = np.zeros(num_episodes)
+    rewards = np.zeros(num_episodes)
+
     # initialize the action value function
     if q is None:
         q = defaultdict(lambda: np.zeros(env.action_space.n))
@@ -44,13 +49,15 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, p
             q[state][action] += alpha * (
                 reward + discount_factor * q[next_state][best_next_action] - q[state][action]
             )
+            iterations[episode] = t
+            rewards[episode] += reward
             # check for finished episode
             if done:
                 break
             # otherwise update state and increase the t
             t += 1
             state = next_state
-    return q
+    return q, iterations, rewards
 
 
 # TODO: SAVE the T for episode.
@@ -108,8 +115,8 @@ def q_learning_experience(
     env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, T=2, N=100, policy=None
 ):
     """
-    Q-Learning (off-policy control) algorithm implementation as described in
-    http://incompleteideas.net/sutton/book/ebook/node65.html.
+    Q-Learning (off-policy control) algorithm implementation  with experience replay as described in
+    Experience Replay for Real-Time Reinforcement Learning Control http://busoniu.net/files/papers/smcc11.pdf.
     :param env: The OpenAI Env used
     :param num_episodes: Number of episodes to run the algorithm for
     :param q: Q action state values to start from
@@ -117,15 +124,22 @@ def q_learning_experience(
     :param alpha: The learning rate
     :param policy: The policy to use during training
     :return: q the optimal value function
+    :return iterations number of iterations per episode
+    :return rewards accumulative reward per episode
     """
     # T = 2  # Length of each trajectory
     # N = 100  # Number of replays
-    l = 1  # trajectories index
+    L = 1  # trajectories index
+
+    # initilize arrays for holding stats by episide
+    iterations = np.zeros(num_episodes)
+    rewards = np.zeros(num_episodes)
+
     # initialize the action value function
     if q is None:
         q = defaultdict(lambda: np.zeros(env.action_space.n))
-        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.2, q=q)
-        d = deque(maxlen=N)
+        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.1, q=q)
+    d = deque(maxlen=N)
     # loop for each episode
     for episode in range(num_episodes):
         utils.print_in_line(episode, num_episodes)
@@ -145,23 +159,34 @@ def q_learning_experience(
             best_next_action = np.argmax(q[next_state])
             tuple_q = (state, action, reward, next_state, best_next_action)
             d.append(tuple_q)
+            iterations[episode] = t
             # check for finished episode
             if done:
                 break
             # otherwise update state and increase the t
             t += 1
             state = next_state
-        if episode == l * T:
-            for _ in range(N * l * T):
+        if episode == L * T:
+            for _ in range(N * L * T):
                 (state, action, reward, next_state, best_next_action) = random.sample(d, 1)[0]
                 q[state][action] += alpha * (
                     reward + discount_factor * q[next_state][best_next_action] - q[state][action]
                 )
-            l += 1
-    return q
+                rewards[episode] += reward
+            L += 1
+    return q, iterations, rewards
 
 
-def double_q_learning(env, num_episodes: int, q_A=None, q_B=None, discount_factor=0.9, alpha=0.3, policy_A=None, policy_B=None):
+def double_q_learning(
+    env,
+    num_episodes: int,
+    q_A=None,
+    q_B=None,
+    discount_factor=0.9,
+    alpha=0.3,
+    policy_A=None,
+    policy_B=None,
+):
     """
     Double Q-Learning (off-policy control) algorithm implementation as described in
     http://incompleteideas.net/sutton/book/ebook/node65.html.
@@ -174,7 +199,14 @@ def double_q_learning(env, num_episodes: int, q_A=None, q_B=None, discount_facto
     :param policy_A: First policy to use during training
     :param policy_B: Second policy to use during training
     :return: q the optimal value function
+    :return iterations number of iterations per episode
+    :return rewards accumulative reward per episode
     """
+
+    # initilize arrays for holding stats by episide
+    iterations = np.zeros(num_episodes)
+    rewards = np.zeros(num_episodes)
+
     # initialize the action value functions and policies
     if q_A is None:
         q_A = defaultdict(lambda: np.zeros(env.action_space.n))
@@ -211,16 +243,18 @@ def double_q_learning(env, num_episodes: int, q_A=None, q_B=None, discount_facto
             q_update[state][action] += alpha * (
                 reward + discount_factor * q_target[next_state][best_next_action] - q_update[state][action]
             )
+            iterations[episode] = t
+            rewards[episode] += reward
             # check for finished episode
             if done:
                 break
             # otherwise update state and increase the t
             t += 1
             state = next_state
-    return q_A
+    return q_A, iterations, rewards
 
 
-def sarsa(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy=None):
+def sarsa(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, policy=None):
     """
     Sarsa (on-policy TD control) algorithm implementation as described in
     http://incompleteideas.net/sutton/book/ebook/node64.html.
@@ -231,7 +265,13 @@ def sarsa(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy
     :param alpha: The learning rate
     :param policy: The policy to use during training
     :return: q the optimal value function
+    :return iterations number of iterations per episode
+    :return rewards accumulative reward per episode
     """
+    # initilize arrays for holding stats by episide
+    iterations = np.zeros(num_episodes)
+    rewards = np.zeros(num_episodes)
+
     # initialize the action value function
     if q is None:
         q = defaultdict(lambda: np.zeros(env.action_space.n))
@@ -257,6 +297,8 @@ def sarsa(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy
             q[state][action] += alpha * (
                 reward + discount_factor * q[next_state][next_action] - q[state][action]
             )
+            iterations[episode] = t
+            rewards[episode] += reward
             # check for finished episode
             if done:
                 break
@@ -264,4 +306,4 @@ def sarsa(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy
             t += 1
             state = next_state
             action = next_action
-    return q
+    return q, iterations, rewards
