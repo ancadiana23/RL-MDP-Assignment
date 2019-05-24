@@ -203,11 +203,18 @@ T = 2  # Length of each trajectory
 N = 100  # Number of replays
 
 # Best params -> num_iteration = 200, alpha = 1e-3, T = 2, N = 100
-for i in range(10):
-    print(f"iteration {i}")
-    q = learnalg.q_learning_experience(env, num_iterations, alpha=alpha, discount_factor=0.9, T=T, N=N)
-    policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
-    print("Q-Learning with experience relay")
-    for item in sorted(q.keys()):
-        print(f"state {item} - Actions {q[item]}")
-    env.render_policy(policy=policy)
+#for i in range(10):
+#    print(f"iteration {i}")
+q = learnalg.q_learning_experience(env, num_iterations, alpha=alpha, discount_factor=0.9, T=T, N=N)
+policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
+print("Q-Learning with experience relay")
+for item in sorted(q.keys()):
+    print(f"state {item} - Actions {q[item]}")
+env.render_policy(policy=policy)
+
+q = learnalg.q_learning_with_eligibility_traces(env, num_iterations, alpha=alpha, eligibility_factor=0.2, discount_factor=0.9)
+policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
+print("Q-Learning with eligibility traces")
+for item in sorted(q.keys()):
+    print(f"state {item} - Actions {q[item]}")
+env.render_policy(policy=policy)

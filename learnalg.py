@@ -53,6 +53,58 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, p
     return q
 
 
+# TODO: SAVE the T for episode.
+def q_learning_with_eligibility_traces(env, num_episodes: int, q=None, discount_factor=0.9, eligibility_factor=0.9, alpha=0.3, policy=None):
+    """
+    Q-Learning (off-policy control) algorithm implementation as described in
+    http://incompleteideas.net/sutton/book/ebook/node65.html.
+    :param env: The OpenAI Env used
+    :param num_episodes: Number of episodes to run the algorithm for
+    :param q: Q action state values to start from
+    :param discount_factor: The gamma discount factor
+    :param alpha: The learning rate
+    :param policy: The policy to use during training
+    :return: q the optimal value function
+    """
+    # initialize the action value function
+    if q is None:
+        q = defaultdict(lambda: np.zeros(env.action_space.n))
+        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.1, q=q)
+
+    e = defaultdict(lambda: np.zeros(env.action_space.n))
+
+    # loop for each episode
+    for episode in range(num_episodes):
+        utils.print_in_line(episode, num_episodes)
+        # initialize the state
+        state = env.reset()
+        done = False
+        t = 0
+        # loop for each step in the episode
+        while not done:
+            # env.render()
+            # choose action from state based on the policy
+            action_prob = policy(state)
+            action = np.random.choice(np.arange(len(action_prob)), p=action_prob)
+            # take a step in the environment
+            next_state, reward, done, _ = env.step(action)
+            # q learning update for Q function case
+            best_next_action = np.argmax(q[next_state])
+            delta = reward + discount_factor * q[next_state][best_next_action] - q[state][action]
+            e[state][action] += 1
+            for et_state in q:
+                for et_action in range(len(q[et_state])):
+                    q[et_state][et_action] += alpha * e[et_state][et_action] * delta
+                    e[et_state][et_action] *= discount_factor * eligibility_factor 
+            
+            # check for finished episode
+            if done:
+                break
+            # otherwise update state and increase the t
+            t += 1
+            state = next_state
+    return q
+
 def q_learning_experience(
     env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, T=2, N=100, policy=None
 ):
@@ -184,7 +236,7 @@ def sarsa(env, num_episodes: int, q=None, discount_factor=1.0, alpha=0.3, policy
     # initialize the action value function
     if q is None:
         q = defaultdict(lambda: np.zeros(env.action_space.n))
-        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.1, q=q)
+        policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.2, q=q)
     # loop for each episode
     for episode in range(num_episodes):
         utils.print_in_line(episode, num_episodes)
