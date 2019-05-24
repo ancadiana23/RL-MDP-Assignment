@@ -12,23 +12,23 @@ import utils
 import time
 
 
-# def print_state_latex(states):
-#     print(
-#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
-#         + f"& {np.around(states[0],5)}    & {np.around(states[1],5)}      & {np.around(states[2],5)}      & {np.around(states[3],5)}         \\\\ \\hline"
-#     )
-#     print(
-#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
-#         + f"& {np.around(states[4],5)}    & {np.around(states[5],5)}      & {np.around(states[6],5)}      & {np.around(states[7],5)}         \\\\ \\hline"
-#     )
-#     print(
-#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
-#         + f"& {np.around(states[8],5)}    & {np.around(states[9],5)}      & {np.around(states[10],5)}       & {np.around(states[11],5)}          \\\\ \\hline"
-#     )
-#     print(
-#         "\\multicolumn{1}{|l|}{\\textbf{0}}"
-#         + f"& {np.around(states[12],5)}     & {np.around(states[13],5)}      & {np.around(states[14],5)}       & {np.around(states[15],5)}          \\\\ \\hline"
-#     )
+def print_state_latex(states):
+    print(
+        "\\multicolumn{1}{|l|}{\\textbf{0}}"
+        + f"& {np.around(states[0],5)}    & {np.around(states[1],5)}      & {np.around(states[2],5)}      & {np.around(states[3],5)}         \\\\ \\hline"
+    )
+    print(
+        "\\multicolumn{1}{|l|}{\\textbf{0}}"
+        + f"& {np.around(states[4],5)}    & {np.around(states[5],5)}      & {np.around(states[6],5)}      & {np.around(states[7],5)}         \\\\ \\hline"
+    )
+    print(
+        "\\multicolumn{1}{|l|}{\\textbf{0}}"
+        + f"& {np.around(states[8],5)}    & {np.around(states[9],5)}      & {np.around(states[10],5)}       & {np.around(states[11],5)}          \\\\ \\hline"
+    )
+    print(
+        "\\multicolumn{1}{|l|}{\\textbf{0}}"
+        + f"& {np.around(states[12],5)}     & {np.around(states[13],5)}      & {np.around(states[14],5)}       & {np.around(states[15],5)}          \\\\ \\hline"
+    )
 
 
 def plot_stuff(deltas_value, deltas_iteration):
@@ -218,3 +218,22 @@ print("Q-Learning with eligibility traces")
 for item in sorted(q.keys()):
     print(f"state {item} - Actions {q[item]}")
 env.render_policy(policy=policy)
+
+
+
+e_learning_iterations = list()
+vector_e = list()
+for _ in range(5):
+  vec = np.zeros(16)
+  q = learnalg.double_q_learning(
+      env, 1000, alpha=0.1, discount_factor=0.9)
+  policy = utils.make_epsilon_greedy_policy(epsilon=0.0, action_count=env.action_space.n, q=q)
+  print("Double Q-Learning")
+  for item in sorted(q.keys()):
+      print(f"state {item} - Actions {q[item]}")
+      vec[item] = (np.max(q[item]))
+  env.render_policy(policy=policy)
+  #e_learning_iterations.append(iterations)
+  vector_e.append(vec)
+states = np.mean(vector_e,0)
+#print_state_latex(states)
