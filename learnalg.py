@@ -71,10 +71,9 @@ def q_learning_with_eligibility_traces(env, num_episodes: int, q=None, discount_
         q = defaultdict(lambda: np.zeros(env.action_space.n))
         policy = utils.make_epsilon_greedy_policy(env.action_space.n, epsilon=0.1, q=q)
 
-    e = defaultdict(lambda: np.zeros(env.action_space.n))
-
     # loop for each episode
     for episode in range(num_episodes):
+        e = defaultdict(lambda: np.zeros(env.action_space.n))
         utils.print_in_line(episode, num_episodes)
         # initialize the state
         state = env.reset()
