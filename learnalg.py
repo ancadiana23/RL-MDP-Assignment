@@ -64,8 +64,8 @@ def q_learning_with_eligibility_traces(
     env, num_episodes: int, q=None, discount_factor=0.9, eligibility_factor=0.9, alpha=0.3, policy=None
 ):
     """
-    Q-Learning (off-policy control) algorithm implementation as described in
-    http://incompleteideas.net/sutton/book/ebook/node65.html.
+    Q-Learning with eligibility traces (off-policy control) algorithm implementation as described in
+    http://incompleteideas.net/sutton/book/ebook/node78.html    
     :param env: The OpenAI Env used
     :param num_episodes: Number of episodes to run the algorithm for
     :param q: Q action state values to start from
