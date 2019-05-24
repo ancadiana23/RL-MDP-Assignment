@@ -60,8 +60,9 @@ def q_learning(env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, p
     return q, iterations, rewards
 
 
-# TODO: SAVE the T for episode.
-def q_learning_with_eligibility_traces(env, num_episodes: int, q=None, discount_factor=0.9, eligibility_factor=0.9, alpha=0.3, policy=None):
+def q_learning_with_eligibility_traces(
+    env, num_episodes: int, q=None, discount_factor=0.9, eligibility_factor=0.9, alpha=0.3, policy=None
+):
     """
     Q-Learning (off-policy control) algorithm implementation as described in
     http://incompleteideas.net/sutton/book/ebook/node65.html.
@@ -72,7 +73,13 @@ def q_learning_with_eligibility_traces(env, num_episodes: int, q=None, discount_
     :param alpha: The learning rate
     :param policy: The policy to use during training
     :return: q the optimal value function
+    :return iterations number of iterations per episode
+    :return rewards accumulative reward per episode
     """
+
+    # initilize arrays for holding stats by episide
+    iterations = np.zeros(num_episodes)
+    rewards = np.zeros(num_episodes)
     # initialize the action value function
     if q is None:
         q = defaultdict(lambda: np.zeros(env.action_space.n))
@@ -101,15 +108,18 @@ def q_learning_with_eligibility_traces(env, num_episodes: int, q=None, discount_
             for et_state in q:
                 for et_action in range(len(q[et_state])):
                     q[et_state][et_action] += alpha * e[et_state][et_action] * delta
-                    e[et_state][et_action] *= discount_factor * eligibility_factor 
-            
+                    e[et_state][et_action] *= discount_factor * eligibility_factor
+
             # check for finished episode
+            iterations[episode] = t
+            rewards[episode] += reward
             if done:
                 break
             # otherwise update state and increase the t
             t += 1
             state = next_state
-    return q
+    return q, iterations, rewards
+
 
 def q_learning_experience(
     env, num_episodes: int, q=None, discount_factor=0.9, alpha=0.3, T=2, N=100, policy=None
@@ -178,14 +188,7 @@ def q_learning_experience(
 
 
 def double_q_learning(
-    env,
-    num_episodes: int,
-    q_A=None,
-    q_B=None,
-    discount_factor=0.9,
-    alpha=0.3,
-    policy_A=None,
-    policy_B=None,
+    env, num_episodes: int, q_A=None, q_B=None, discount_factor=0.9, alpha=0.3, policy_A=None, policy_B=None
 ):
     """
     Double Q-Learning (off-policy control) algorithm implementation as described in

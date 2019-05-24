@@ -1,14 +1,9 @@
-"""
- - Howard's Policy Iteration (Iterative Policy Evaluation and Policy Improvement)
- - Simple Policy Iteration
- - Value Iteration
-"""
 import numpy as np
 import time
 from collections import defaultdict
 
 
-def value_iteration(env, discount_factor=1.0, theta=0.00001):
+def value_iteration(env, discount_factor=0.9, theta=0.00001):
     deltas = list()
     t1_start = time.perf_counter()
     t1_cpu_start = time.process_time()
@@ -50,7 +45,7 @@ def value_iteration(env, discount_factor=1.0, theta=0.00001):
     return policy, state_values, deltas, (time_elapsed, time_cpu_elapsed)
 
 
-def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001, simple=False):
+def policy_iteration(env, policy=None, discount_factor=0.9, theta=0.00001, simple=False):
     deltas = list()
     t1_start = time.perf_counter()
     t1_cpu_start = time.process_time()
@@ -85,7 +80,7 @@ def policy_iteration(env, policy=None, discount_factor=1.0, theta=0.00001, simpl
     return policy, state_values, deltas, (time_elapsed, time_cpu_elapsed)
 
 
-def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
+def policy_evaluation(env, policy=None, discount_factor=0.9, theta=0.00001):
     deltas = list()
     if policy is None:
         policy = defaultdict(lambda: np.ones(env.action_space.n) / env.action_space.n)
@@ -120,7 +115,7 @@ def policy_evaluation(env, policy=None, discount_factor=1.0, theta=0.00001):
     return state_values, deltas
 
 
-def policy_improvement(env, policy, state_values, discount_factor=1.0):
+def policy_improvement(env, policy, state_values, discount_factor=0.9):
     # we assume that the policy is stable
     policy_stable = True
     # loop over each state
